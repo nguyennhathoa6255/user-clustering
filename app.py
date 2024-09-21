@@ -64,7 +64,7 @@ def kmeans_clustering(embedding_df, num_clusters, return_value="both"):
 
 @st.cache_data
 def compute_umap(clustering_df):
-    Umap = umap.UMAP(n_components=3, random_state=42)
+    Umap = umap.UMAP(n_neighbors=15, min_dist=0.1, n_components=3, random_state=42)
     umap_result = Umap.fit_transform(clustering_df.iloc[:, :-1])
     df_umap = pd.DataFrame(data=umap_result, columns=['first_dim', 'second_dim', 'third_dim'])
     return df_umap
@@ -100,10 +100,10 @@ with st.sidebar:
 # Handle text input
 if input_type == "Text":
     with st.form('form_text_input'):
-        text_input = st.text_area("Type a post text", value="a close up of a collage of bollywood movies with a large number of them")
+        text_input = st.text_area("**Type a post text**", value="a close up of a collage of bollywood movies with a large number of them")
         text_input = cl.post_cleaning(text_input)
         text_input = cl.post_cleaning_Nomeaningword(text_input)
-        submitted = st.form_submit_button("Submit")
+        submitted = st.form_submit_button("Run")
         if submitted:
             text_input = text_input
 
@@ -120,7 +120,7 @@ else:
             st.image(uploaded_file, use_column_width=True)
         else:
             st.image("./Image/bolly.jpg", use_column_width=True)
-        st.write(f'Image to text: {text_input}')
+        st.write(f'Image to text: **{text_input}**')
         text_input = cl.post_cleaning(text_input)
         text_input = cl.post_cleaning_Nomeaningword(text_input)
 
@@ -154,13 +154,13 @@ cluster_id = min_cluster + 1
 
 
 # Display cluster info
-with st.expander("See cluster number"):
+with st.expander("See user clustering chart"):
     fig = ch.create_3d_scatter_plot(df_umap=df_umap, custom_labels=ch.custom_labels(num_cluters))
     st.plotly_chart(fig)
-    st.success(f"User's posts belong to group **{name_cluster}**", icon="✅")
+    st.success(f"User's posts belong to group {name_cluster}", icon="✅")
 
 
-st.write(f"User's posts belong to group **{name_cluster}**")
+st.subheader(f"Recommend products to group: {name_cluster[2:]}")
  
 # Display recommended products
 @st.cache_data
@@ -177,3 +177,6 @@ with st.expander("Recommended products by system:"):
     st.write(products)
 with st.expander("Recommended products by AI:"):
     st.write(get_response(name_cluster, GOOGLE_API_KEY))
+if get_response(name_cluster, GOOGLE_API_KEY):
+    st.toast('Run successfully!', icon='✅')
+    st.toast('See results now!', icon='🎉')

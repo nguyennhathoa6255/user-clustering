@@ -8,41 +8,41 @@ import plotly.graph_objects as go
 def custom_labels(num_clusters):
     if num_clusters == 5:
         return [
-            '1: Pop Culture and Celebrity News',
-            '2: Sports and Entertainment Highlights',
-            '3: Bollywood and Indian Entertainment',
-            '4: Music and Concerts',
-            '5: Hollywood and TV Shows'
+            '1: Pop Culture Icons: Kardashian, Music & Fashion',
+            '2: NBA & WWE',
+            '3: Music: Pop-Rock & EDM',
+            '4: Bollywood & Sports ',
+            '5: Hollywood & Entertainment Icons'
         ]
     elif num_clusters == 6:
         return [
-            '1: Pop Culture and Celebrity News',
-            '2: Comedy and Talk Shows',
-            '3: Global Music and Concerts',
-            '4: Bollywood and Cricket',
-            '5: Music Performances and Pop Stars',
-            '6: Sports and Major Events'
+            '1: Bollywood & Fashion Trends',
+            '2: Football, WWE, NBA & Tennis',
+            '3: Global Pop & EDM Icons',
+            '4: Pop & Hip-Hop Stars in Entertainment',
+            '5: Hollywood & Political Icons in Entertainment',
+            '6: Pop Culture Icons: Kardashian, Music & Fashion'
         ]
     elif num_clusters == 7:
         return [
-            '1: Hollywood Actors and Celebrity News', 
-            '2: Pop Culture and Celebrity Highlights',
-            '3: Sports Personalities and Major Events',
-            '4: Politics and Social Commentary',
-            '5: Music Stars and Album',
-            '6: Bollywood and Indian Celebrities',
-            '7: Global Music Tours and Concerts'
+            '1: World Sports: Football, Tennis & Racing', 
+            '2: Pop, Rock & EDM Music',
+            '3: Pop, Hip-Hop & R&B',
+            '4: Hollywood & TV Entertainment',
+            '5: The Kardashian-Jenner Lifestyle & Beyond',
+            '6: NBA & WWE & Entertainment Icons',
+            '7: Bollywood & Cricket'
         ]
     else:
         return [
-            '1: Bollywood and Cricket',
-            '2: Hollywood & Music Stars',
-            '3: Music and television stars.',
-            '4: Football, tennis, and famous athletes',
-            '5: International music and renowned artists, bands.',
-            '6: Hollywood films and famous actors.',
-            '7: Music, cinema, and television.',
-            '8: Sports and top athletes.'
+            '1: Pop & Hip-Hop',
+            '2: Celebrities & Entertainment Icons',
+            '3: Football, Tennis & MMA',
+            '4: Pop Music & Entertainment ',
+            '5: Pop Culture Icons: Kardashian, Music & Fashion',
+            '6: NBA, WWE & Celebrity TV Hosts',
+            '7: Talk Show Hosts & Hollywood Actors',
+            '8: Bollywood & Cricket'
         ]
 
 
@@ -51,7 +51,7 @@ def create_3d_scatter_plot(df_umap, custom_labels):
     centers = df_umap.groupby('cluster')[['first_dim', 'second_dim', 'third_dim']].mean().values
 
     # Màu sắc tùy chỉnh cho từng cụm
-    custom_colors = ['#8DEEEE', '#F4A460', '#FFDEAD', '#7FFFD4', '#FFB6C1', '#836FFF', '#FF6A6A', '#FFEB55']
+    custom_colors = ['#4535C1', '#FF8225', '#ED3EF7', '#00712D', '#F5004F', '#FFEB55', '#FF8C9E', '#836FFF']
 
     # Tạo figure 3D scatter plot
     fig = go.Figure()
@@ -82,7 +82,7 @@ def create_3d_scatter_plot(df_umap, custom_labels):
             y=[center[1]],
             z=[center[2]],
             mode='text',
-            text=f'{cluster_id + 1}',
+            # text=f'{cluster_id + 1}',
             textfont=dict(size=15, color='black', family='Arial'),
             showlegend=False
         ))
@@ -95,9 +95,9 @@ def create_3d_scatter_plot(df_umap, custom_labels):
             zaxis_title='Third Dimension'
         ),
         title='Users Clustering in 3D',
-        legend_title='Topics',
-        width=1200,  
-        height=600,  
+        legend_title='Choose Topics',
+        # width=1200,  
+        # height=600,  
     )
 
     return fig
