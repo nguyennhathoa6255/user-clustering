@@ -1,0 +1,6 @@
+env/
+.env
+appcopy.py
+test.ipynb
+determinetopic.ipynb
+democopy.ipynb
