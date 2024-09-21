@@ -60,8 +60,6 @@ def create_3d_scatter_plot(df_umap, custom_labels):
     for cluster_id, center in enumerate(centers):
         cluster_points = df_umap[df_umap['cluster'] == cluster_id]
 
-        # marker_size = 15 if cluster_id == 0 else 8
-
         fig.add_trace(go.Scatter3d(
             x=cluster_points['first_dim'],
             y=cluster_points['second_dim'],
@@ -72,8 +70,10 @@ def create_3d_scatter_plot(df_umap, custom_labels):
                 color=custom_colors[cluster_id],  # Áp dụng màu sắc tùy chỉnh
                 opacity=0.7
             ),
-            # name=f'Cluster {cluster_id + 1}'
-            name=custom_labels[cluster_id]
+            name=custom_labels[cluster_id],
+            legendgroup=f'Cluster {cluster_id + 1}',  # Tạo nhóm legend
+            # legendgrouptitle_text=f'Cluster {cluster_id + 1}',  # Tên nhóm
+            showlegend=True
         ))
 
         # Thêm tên cụm vào vị trí trung tâm của cluster
@@ -82,7 +82,6 @@ def create_3d_scatter_plot(df_umap, custom_labels):
             y=[center[1]],
             z=[center[2]],
             mode='text',
-            # text=f'{cluster_id + 1}',
             textfont=dict(size=15, color='black', family='Arial'),
             showlegend=False
         ))
@@ -96,8 +95,11 @@ def create_3d_scatter_plot(df_umap, custom_labels):
         ),
         title='Users Clustering in 3D',
         legend_title='Choose Topics',
-        # width=1200,  
-        # height=600,  
+        # Tùy chọn exclusive
+        legend=dict(
+            itemclick="toggleothers",  # Bật chế độ ẩn các trace khác khi nhấn vào legend
+            itemdoubleclick="toggle"  # Nhấn đúp để bật lại tất cả các trace
+        )
     )
 
     return fig
