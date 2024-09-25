@@ -12,13 +12,24 @@ import os
 import google.generativeai as genai
 
 
+# Set page config
 st.set_page_config(
     layout="wide",  
     page_title="Topic Modeling",      
     page_icon="🧊"  
 )
+# Load external CSS from file
+def local_css(file_name):
+    with open(file_name, 'r', encoding='utf-8') as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+# Load CSS file
+local_css("./assets/styles.css")
+
 
 st.logo('Image/logo.png', icon_image='Image/logo.png')
+
+
 # Caching data for faster reloads
 @st.cache_data
 def load_product_data():
@@ -150,11 +161,9 @@ for i in range(len(centroids)):  # Ensure you're iterating through the DataFrame
 
 print(f"Min Euclidean distance is for cluster {min_cluster +1}: {min_euclidean_dist:.4f}")
 
-
 # Get closest cluster
 name_cluster = ch.custom_labels(num_cluters)[min_cluster]
 cluster_id = min_cluster + 1
-
 
 # Display cluster info
 with st.expander("See user clustering chart"):
@@ -162,8 +171,14 @@ with st.expander("See user clustering chart"):
     st.plotly_chart(fig)
     st.success(f"User's posts belong to group {name_cluster}", icon="✅")
 
+# Sử dụng class CSS từ file styles.css
+st.markdown(f"""
+    <div class="highlight-title">
+        Recommend products to group: {name_cluster[2:]}
+    </div>
+""", unsafe_allow_html=True)
 
-st.subheader(f"Recommend products to group: {name_cluster[2:]}")
+# st.subheader(f"Recommend products to group: {name_cluster[2:]}")
  
 # Display recommended products
 @st.cache_data
@@ -173,58 +188,10 @@ def get_products_by_cluster(cluster_number, cluster_id, df):
 
 products = get_products_by_cluster(num_cluters, cluster_id, df_product)
 
-def display_products_by_group(products):
-    st.markdown("""
-    <style>
-    .product-card {
-        box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 15px;
-        padding: 20px;
-        background-color: white;
-        transition: transform 0.3s;
-        text-align: center;
-    }
-    .product-card:hover {
-        transform: scale(1.05);
-        box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
-    }
-    .product-card img {
-        max-width: 100%;
-        border-radius: 10px;
-        margin-bottom: 10px;
-    }
-    .product-card a {
-        text-decoration: none;
-        font-weight: bold;
-        color: #007BFF;
-    }
-    .product-card a:hover {
-        color: #0056b3;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    for group in products['product_group'].unique():
-        st.subheader(f"{group}")  # Show product group
-        
-        group_products = products[products['product_group'] == group]
-        rows = [group_products.iloc[i:i + 3] for i in range(0, len(group_products), 3)]
-        
-        for row in rows:
-            cols = st.columns(len(row))
-            for idx, (_, product) in enumerate(row.iterrows()):
-                with cols[idx]:
-                    st.markdown(f"""
-                    <div class="product-card">
-                        <img src="{product['image']}" alt="{product['products']}">
-                        <a href="{product['link']}" target="_blank">{product['products']}</a>
-                    </div>
-                    """, unsafe_allow_html=True)
-
 # Toast notifications and loading spinner
 with st.spinner("Fetching product recommendations..."):
     with st.expander("Recommended products by system:"):
-        display_products_by_group(products)
+        ch.display_products_by_group(products)
     
     with st.expander("Recommended products by AI:"):
         ai_response = get_response(name_cluster, GOOGLE_API_KEY)
@@ -232,3 +199,4 @@ with st.spinner("Fetching product recommendations..."):
 
     if ai_response:
         st.toast('Products recommended successfully!', icon='✅')
+        st.toast(f"User's posts belong to group {name_cluster[2:]}", icon="🎉")

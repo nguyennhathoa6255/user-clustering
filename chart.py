@@ -1,7 +1,4 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.spatial import ConvexHull
+import streamlit as st
 import plotly.graph_objects as go
 
 
@@ -106,39 +103,50 @@ def create_3d_scatter_plot(df_umap, custom_labels):
     return fig
 
 
-def plot_clusters_with_hulls(df_umap, custom_labels):
-    # Tính toán tâm cụm
-    centers = df_umap.groupby('cluster')[['first_dim', 'second_dim']].mean().values
-
-    # Tạo danh sách các màu tùy chỉnh cho các cụm
-    custom_colors = ['#8DEEEE', '#F4A460', '#FFDEAD','#7FFFD4','#FFB6C1','#836FFF','#FF6A6A', '#507687', '#624E88', '#654520']
-
-    # Vẽ biểu đồ scatterplot
+def display_products_by_group(products):
+    st.markdown("""
+    <style>
+    .product-card {
+        box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        background-color: white;
+        transition: transform 0.3s;
+        text-align: center;
+    }
+    .product-card:hover {
+        transform: scale(1.05);
+        box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
+    }
+    .product-card img {
+        max-width: 100%;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    .product-card a {
+        text-decoration: none;
+        font-weight: bold;
+        color: #007BFF;
+    }
+    .product-card a:hover {
+        color: #0056b3;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
-    fig, ax = plt.subplots(figsize=(12, 8))
-    scatterplot = sns.scatterplot(data=df_umap, x='first_dim', y='second_dim', hue='cluster', palette=custom_colors, alpha=0.7, edgecolor='black')
-
-    # Lặp qua từng cụm và vẽ đường bao convex hull
-    for cluster_id, center in enumerate(centers):
-        cluster_points = df_umap[df_umap['cluster'] == cluster_id][['first_dim', 'second_dim']].values
-        hull = ConvexHull(cluster_points)
-        hull_points = cluster_points[hull.vertices]
-        hull_points = np.vstack((hull_points, hull_points[0]))  # Thêm điểm cuối trùng với điểm đầu tiên
-        ax.fill(hull_points[:, 0], hull_points[:, 1], color=custom_colors[cluster_id], alpha=0.3)  # Vẽ màu nền cho đường bao
-        ax.plot(hull_points[:, 0], hull_points[:, 1], color=custom_colors[cluster_id], linewidth=2)  # Vẽ đường bao
-
-        # Hiển thị tên cụm với màu tương ứng
-        cluster_name = f'{cluster_id + 1}'  # Thay đổi chỉ số tên cụm
-        ax.text(center[0], center[1], cluster_name, fontsize=15, fontweight='bold', color="Black", ha='center', va='center')
-
-    # Cập nhật nhãn chú thích với tên cụm tùy chỉnh
-    handles, labels = scatterplot.get_legend_handles_labels()
-
-    ax.legend(handles, custom_labels, loc='best', title='Topics')
-
-    # Hiển thị biểu đồ
-    ax.set_xlabel('First Dimension')
-    ax.set_ylabel('Second Dimension')
-    ax.set_title('Users Clustering')
-    
-    return fig
+    for group in products['product_group'].unique():
+        st.subheader(f"{group}")  # Show product group
+        
+        group_products = products[products['product_group'] == group]
+        rows = [group_products.iloc[i:i + 3] for i in range(0, len(group_products), 3)]
+        
+        for row in rows:
+            cols = st.columns(len(row))
+            for idx, (_, product) in enumerate(row.iterrows()):
+                with cols[idx]:
+                    st.markdown(f"""
+                    <div class="product-card">
+                        <img src="{product['image']}" alt="{product['products']}">
+                        <a href="{product['link']}" target="_blank">{product['products']}</a>
+                    </div>
+                    """, unsafe_allow_html=True)
