@@ -18,7 +18,6 @@ st.set_page_config(
     page_icon="🧊"  
 )
 
-
 # Caching data for faster reloads
 @st.cache_data
 def load_product_data():
@@ -109,20 +108,23 @@ if input_type == "Text":
 
 # Handle image upload
 else:
-    uploaded_file = st.file_uploader("Upload an image...", type=["jpg", "jpeg", "png"])
-    if uploaded_file is not None:
-        text_input = cl.process_image(uploaded_file, cl.query)
-    else:
-        test = cl.query("./Image/bolly.jpg")
-        text_input = test[0]['generated_text']
-    with st.expander("Example image"):
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        uploaded_file = st.file_uploader("Upload an image...", type=["jpg", "jpeg", "png"])
         if uploaded_file is not None:
-            st.image(uploaded_file, use_column_width=True)
+            text_input = cl.process_image(uploaded_file, cl.query)
         else:
-            st.image("./Image/bolly.jpg", use_column_width=True)
-        st.write(f'Image to text: **{text_input}**')
-        text_input = cl.post_cleaning(text_input)
-        text_input = cl.post_cleaning_Nomeaningword(text_input)
+            test = cl.query("./Image/bolly.jpg")
+            text_input = test[0]['generated_text']
+        with col2:
+            with st.expander("Image"):
+                if uploaded_file is not None:
+                    st.image(uploaded_file, use_column_width=True)
+                else:
+                    st.image("./Image/bolly.jpg", use_column_width=True)
+                st.write(f'Image to text: **{text_input}**')
+                text_input = cl.post_cleaning(text_input)
+                text_input = cl.post_cleaning_Nomeaningword(text_input)
 
 # Embedding model
 @st.cache_resource
@@ -166,15 +168,63 @@ st.subheader(f"Recommend products to group: {name_cluster[2:]}")
 @st.cache_data
 def get_products_by_cluster(cluster_number, cluster_id, df):
     cluster_data = df[(df['cluster_number'] == cluster_number) & (df['cluster_id'] == cluster_id)]
-    return cluster_data[['product_group', 'products', 'link']]
+    return cluster_data[['product_group', 'products', 'link', 'image']]
 
 products = get_products_by_cluster(num_cluters, cluster_id, df_product)
-# st.write('Recommended products by system:')
-# st.write(products)
 
+def display_products_by_group(products):
+    # Tạo CSS để tùy chỉnh thẻ card của từng sản phẩm
+    st.markdown("""
+    <style>
+    .product-card {
+        border: 1px solid #e6e6e6;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 10px;
+        text-align: center;
+        background-color: #f9f9f9;
+    }
+    .product-card img {
+        border-radius: 10px;
+    }
+    .product-card a {
+        text-decoration: none;
+        font-size: 16px;
+        color: #007BFF;
+        font-weight: bold;
+    }
+    .product-card a:hover {
+        color: #0056b3;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Duyệt qua từng nhóm sản phẩm
+    for group in products['product_group'].unique():
+        st.subheader(group)  # Hiển thị tên nhóm sản phẩm
+        
+        # Lọc sản phẩm theo nhóm hiện tại
+        group_products = products[products['product_group'] == group]
+        
+        # Chia sản phẩm thành từng nhóm 3 sản phẩm để hiển thị trên cùng hàng
+        rows = [group_products.iloc[i:i + 3] for i in range(0, len(group_products), 3)]
+        
+        for row in rows:
+            cols = st.columns(len(row))  # Tạo số lượng cột tương ứng với số sản phẩm
+            
+            # Duyệt qua các sản phẩm trong hàng và hiển thị chúng
+            for idx, (_, product) in enumerate(row.iterrows()):
+                with cols[idx]:
+                    # Tạo cấu trúc card cho từng sản phẩm
+                    st.markdown(f"""
+                    <div class="product-card">
+                        <img src="{product['image']}" alt="{product['products']}" width="300px">
+                        <a href="{product['link']}" target="_blank">{product['products']}</a>
+                    </div>
+                    """, unsafe_allow_html=True)
 
 with st.expander("Recommended products by system:"):
-    st.write(products)
+    st.write(display_products_by_group(products))
 with st.expander("Recommended products by AI:"):
     st.write(get_response(name_cluster, GOOGLE_API_KEY))
 if get_response(name_cluster, GOOGLE_API_KEY):
