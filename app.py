@@ -18,16 +18,8 @@ st.set_page_config(
     page_title="Topic Modeling",      
     page_icon="🧊"  
 )
-# Load external CSS from file
-def local_css(file_name):
-    with open(file_name, 'r', encoding='utf-8') as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-# Load CSS file
-local_css("./assets/styles.css")
-
-
-st.logo('Image/logo.png', icon_image='Image/logo.png')
+st.logo('images/logo.png', icon_image='images/logo.png')
 
 
 # Caching data for faster reloads
@@ -126,14 +118,14 @@ else:
         if uploaded_file is not None:
             text_input = cl.process_image(uploaded_file, cl.query)
         else:
-            test = cl.query("./Image/bolly.jpg")
+            test = cl.query("./images/bolly.jpg")
             text_input = test[0]['generated_text']
         with col2:
             with st.expander("Image"):
                 if uploaded_file is not None:
                     st.image(uploaded_file, use_column_width=True)
                 else:
-                    st.image("./Image/bolly.jpg", use_column_width=True)
+                    st.image("./images/bolly.jpg", use_column_width=True)
                 st.write(f'Image to text: **{text_input}**')
                 text_input = cl.post_cleaning(text_input)
                 text_input = cl.post_cleaning_Nomeaningword(text_input)
@@ -171,14 +163,8 @@ with st.expander("See user clustering chart"):
     st.plotly_chart(fig)
     st.success(f"User's posts belong to group {name_cluster}", icon="✅")
 
-# Sử dụng class CSS từ file styles.css
-st.markdown(f"""
-    <div class="highlight-title">
-        Recommend products to group: {name_cluster[2:]}
-    </div>
-""", unsafe_allow_html=True)
 
-# st.subheader(f"Recommend products to group: {name_cluster[2:]}")
+st.subheader(f"Recommend products to group: {name_cluster[2:]}")
  
 # Display recommended products
 @st.cache_data
