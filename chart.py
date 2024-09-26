@@ -90,9 +90,11 @@ def create_3d_scatter_plot(df_umap, custom_labels):
         ),
         title='Users Clustering in 3D',
         legend_title='Choose Topics',
-        # Adjust legend to appear outside the plot area
+        # Adjust legend to appear below the plot area
         legend=dict(
-            x=1.05, y=1, orientation='v',
+            orientation='h',
+            x=0.5, y=-0.15,  # Position the legend below the plot
+            xanchor='center',  # Center the legend horizontally
             font=dict(size=10),  # Reduce font size for better visibility on mobile
             itemclick="toggleothers",
             itemdoubleclick="toggle"
