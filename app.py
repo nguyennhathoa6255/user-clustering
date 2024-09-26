@@ -163,24 +163,17 @@ cluster_id = min_cluster + 1
 
 # Display cluster info
 with st.expander("See user clustering chart"):
-    fig = ch.create_3d_scatter_plot(df_umap=df_umap, custom_labels=ch.custom_labels(num_cluters))
-    st.plotly_chart(fig)
+    tab1, tab2 = st.tabs(['3D chart', 'Bar chart'])
+    
+    with tab1:
+        fig = ch.create_3d_scatter_plot(df_umap=df_umap, custom_labels=ch.custom_labels(num_cluters))
+        st.plotly_chart(fig)
 
-    with st.popover("Bar chart", disabled = False):
-
+    with tab2:
         chart_data = pd.DataFrame({
             'Topics': ch.custom_labels(num_cluters),
             'Total Users': [len(clustering_df[clustering_df['cluster'] == i]) for i in range(num_cluters)]
         })
-        # Function to truncate long topic names
-        def truncate_topic_name(name, max_length=15):
-            if len(name) > max_length:
-                return name[:max_length] + '...'  # Truncate and add ellipsis
-            return name
-
-        # Truncate long topic names
-        chart_data['Topics'] = chart_data['Topics'].apply(lambda x: truncate_topic_name(x))
-
         # Create a Plotly bar chart with tooltips
         fig = px.bar(
             chart_data, 
