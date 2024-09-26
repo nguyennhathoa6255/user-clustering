@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 from sklearn.cluster import KMeans
 import umap.umap_ as umap
 from sentence_transformers import SentenceTransformer
@@ -89,6 +90,9 @@ def get_response(name_cluster, GOOGLE_API_KEY):
     input_prompt="""You are an experience-based user product recommendation system with a deep understanding of the field of product advertising on social media platforms. Your task is to recommend products and product links based on the names of a clustered group of people.
     You have to watch the product name very carefully and you should provide the best support to give recommendations and products to the users. 
     I want to recommend specific products (e.g. shirts, pants, movie tickets, balls, etc.) as well as product links for users in the following topic groups: {output}
+    I want the only response in 3 sectors as follows:
+    • Products: \n
+    • Product Links: \n
     """
     response = model.generate_content(input_prompt.format(output=name_cluster))
     response_dict = response.to_dict()
@@ -151,7 +155,7 @@ for i in range(len(centroids)):  # Ensure you're iterating through the DataFrame
         min_euclidean_dist = euclidean_dist
         min_cluster = i
 
-print(f"Min Euclidean distance is for cluster {min_cluster +1}: {min_euclidean_dist:.4f}")
+# print(f"Min Euclidean distance is for cluster {min_cluster +1}: {min_euclidean_dist:.4f}")
 
 # Get closest cluster
 name_cluster = ch.custom_labels(num_cluters)[min_cluster]
@@ -161,10 +165,38 @@ cluster_id = min_cluster + 1
 with st.expander("See user clustering chart"):
     fig = ch.create_3d_scatter_plot(df_umap=df_umap, custom_labels=ch.custom_labels(num_cluters))
     st.plotly_chart(fig)
+
+    with st.popover("Bar chart", disabled = False):
+
+        chart_data = pd.DataFrame({
+            'Topics': ch.custom_labels(num_cluters),
+            'Total Users': [len(clustering_df[clustering_df['cluster'] == i]) for i in range(num_cluters)]
+        })
+        # Function to truncate long topic names
+        def truncate_topic_name(name, max_length=15):
+            if len(name) > max_length:
+                return name[:max_length] + '...'  # Truncate and add ellipsis
+            return name
+
+        # Truncate long topic names
+        chart_data['Topics'] = chart_data['Topics'].apply(lambda x: truncate_topic_name(x))
+
+        # Create a Plotly bar chart with tooltips
+        fig = px.bar(
+            chart_data, 
+            x='Topics', 
+            y='Total Users',
+            hover_data=['Total Users'],  # Add tooltips to show on hover
+            labels={'Total Users': 'Number of Users'},  
+            title=f'User Distribution by {num_cluters} Topics'
+        )
+        
+        st.plotly_chart(fig)
+
     st.success(f"User's posts belong to group {name_cluster}", icon="✅")
 
+st.subheader(f"Recommend products to group: {name_cluster[2:]}")                                                                                
 
-st.subheader(f"Recommend products to group: {name_cluster[2:]}")
  
 # Display recommended products
 @st.cache_data
@@ -177,6 +209,7 @@ products = get_products_by_cluster(num_cluters, cluster_id, df_product)
 # Toast notifications and loading spinner
 with st.spinner("Fetching product recommendations..."):
     with st.expander("Recommended products by system:"):
+        
         ch.display_products_by_group(products)
     
     with st.expander("Recommended products by AI:"):

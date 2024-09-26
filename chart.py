@@ -44,20 +44,18 @@ def custom_labels(num_clusters):
 
 
 def create_3d_scatter_plot(df_umap, custom_labels):
-    # Centers của mỗi cluster
+    # Centers of each cluster
     centers = df_umap.groupby('cluster')[['first_dim', 'second_dim', 'third_dim']].mean().values
 
-    # Màu sắc tùy chỉnh cho từng cụm
+    # Custom colors for each cluster
     custom_colors = ['#4535C1', '#FF8225', '#ED3EF7', '#00712D', '#F5004F', '#FFEB55', '#FF8C9E', '#836FFF']
 
-    # Tạo figure 3D scatter plot
+    # Create 3D scatter plot figure
     fig = go.Figure()
 
-    # Lặp qua từng cluster và thêm scatter cho mỗi cluster
+    # Loop through each cluster and add scatter points
     for cluster_id, center in enumerate(centers):
         cluster_points = df_umap[df_umap['cluster'] == cluster_id]
-
-        # marker_size = 15 if cluster_id == 0 else 8
 
         fig.add_trace(go.Scatter3d(
             x=cluster_points['first_dim'],
@@ -66,27 +64,25 @@ def create_3d_scatter_plot(df_umap, custom_labels):
             mode='markers',
             marker=dict(
                 size=8,
-                color=custom_colors[cluster_id],  # Áp dụng màu sắc tùy chỉnh
+                color=custom_colors[cluster_id],
                 opacity=0.7
             ),
-            # name=f'Cluster {cluster_id + 1}'
             name=custom_labels[cluster_id]
         ))
 
-        # Thêm tên cụm vào vị trí trung tâm của cluster
+        # Add cluster center text
         fig.add_trace(go.Scatter3d(
             x=[center[0]],
             y=[center[1]],
             z=[center[2]],
             mode='text',
-            # text=f'{cluster_id + 1}',
             textfont=dict(size=15, color='black', family='Arial'),
             showlegend=False
         ))
 
-    # Tùy chỉnh các nhãn trục và tiêu đề
+    # Customize axis labels and title
     fig.update_layout(
-        autosize=True, 
+        autosize=True,
         scene=dict(
             xaxis_title='First Dimension',
             yaxis_title='Second Dimension',
@@ -94,10 +90,14 @@ def create_3d_scatter_plot(df_umap, custom_labels):
         ),
         title='Users Clustering in 3D',
         legend_title='Choose Topics',
-        legend=dict(x=1.05, y=0.5, orientation='v',  # Điều chỉnh vị trí của legend trong biểu đồ
-                    itemclick="toggleothers", itemdoubleclick="toggle")
-        # width=1200,  
-        # height=600,  
+        # Adjust legend to appear outside the plot area
+        legend=dict(
+            x=1.05, y=1, orientation='v',
+            font=dict(size=10),  # Reduce font size for better visibility on mobile
+            itemclick="toggleothers",
+            itemdoubleclick="toggle"
+        ),
+        margin=dict(l=0, r=0, b=0, t=30)  # Reduce margins for mobile responsiveness
     )
 
     return fig
